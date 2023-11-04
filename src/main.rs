@@ -1,8 +1,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use eframe::egui::{self};
+use std::fs;
 
 fn main() {
+    //let path = "/home/gerrit/Downloads/eye-texture.jpg"
+    //    .split("/").last().unwrap()
+    //    .split(".").last().unwrap();
+    //println!("{}", path);
     let _ = egui_init();   
 }
 
@@ -13,10 +18,30 @@ fn egui_init() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    let paths = vec![
+    let paths = {
+        let mut files = vec![];
+        let paths1 = fs::read_dir("/home/gerrit/Downloads/")
+            .unwrap().filter_map(|e| e.ok())
+            .map(|e| e.path().to_string_lossy().into_owned())
+            .collect::<Vec<_>>();
+
+        /*for i in 0..paths.len() {
+            let a = paths[i].clone();
+            let is_supported = match a.clone().as_str().split("/").last().unwrap().split(".").last().unwrap() {
+                ".png" | ".jpg" | ".jpeg" | ".tif" | ".tiff" | ".bmp" | ".webm" => true,
+                _ => false
+            };
+            if is_supported {files.push(a.as_str())}
+        }*/
+
+        files.push(paths1[0].as_str());
+        //files.push("file:///home/gerrit/Downloads/eye-texture.jpg");
+        files
+    };
+    /*let paths = vec![
         "file:///home/gerrit/Downloads/eye-texture.jpg",
         "file:///home/gerrit/wallpapers/dark_sun_wallpaper.jpg",
-    ];
+    ];*/
 
     let framebox = Box::new(MyApp::new(paths));
     eframe::run_native(
