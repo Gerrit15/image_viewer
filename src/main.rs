@@ -18,9 +18,9 @@ fn egui_init() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    let paths = {
+    /*let paths = {
         let mut files = vec![];
-        let paths1 = fs::read_dir("/home/gerrit/Downloads/")
+        let paths = fs::read_dir("/home/gerrit/Downloads/")
             .unwrap().filter_map(|e| e.ok())
             .map(|e| e.path().to_string_lossy().into_owned())
             .collect::<Vec<_>>();
@@ -34,14 +34,19 @@ fn egui_init() -> Result<(), eframe::Error> {
             if is_supported {files.push(a.as_str())}
         }*/
 
-        files.push(paths1[0].as_str());
+        files.push(paths[0].as_str());
         //files.push("file:///home/gerrit/Downloads/eye-texture.jpg");
         files
-    };
+    };*/
     /*let paths = vec![
         "file:///home/gerrit/Downloads/eye-texture.jpg",
         "file:///home/gerrit/wallpapers/dark_sun_wallpaper.jpg",
     ];*/
+    let prelim_paths = fs::read_dir("/home/gerrit/Downloads/")
+        .unwrap().filter_map(|e| e.ok())
+        .map(|e| e.path().to_string_lossy().into_owned())
+        .collect::<Vec<_>>();
+    let paths = vec![prelim_paths[0]];
 
     let framebox = Box::new(MyApp::new(paths));
     eframe::run_native(
@@ -61,10 +66,10 @@ struct MyApp<'a> {
 }
 
 impl<'a> MyApp<'a> {
-    fn new(path: Vec<&str>) -> MyApp {
+    fn new(path: Vec<String>) -> MyApp<'a> {
         let mut image_sets = vec![];
         for i in 0..path.len() {
-            image_sets.push(egui::ImageSource::Uri(std::borrow::Cow::Borrowed(path[i])))
+            image_sets.push(egui::ImageSource::Uri(std::borrow::Cow::Borrowed(path[i].as_str())))
         }
         MyApp {
             images: image_sets,
