@@ -18,35 +18,13 @@ fn egui_init() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    /*let paths = {
-        let mut files = vec![];
-        let paths = fs::read_dir("/home/gerrit/Downloads/")
-            .unwrap().filter_map(|e| e.ok())
-            .map(|e| e.path().to_string_lossy().into_owned())
-            .collect::<Vec<_>>();
-
-        /*for i in 0..paths.len() {
-            let a = paths[i].clone();
-            let is_supported = match a.clone().as_str().split("/").last().unwrap().split(".").last().unwrap() {
-                ".png" | ".jpg" | ".jpeg" | ".tif" | ".tiff" | ".bmp" | ".webm" => true,
-                _ => false
-            };
-            if is_supported {files.push(a.as_str())}
-        }*/
-
-        files.push(paths[0].as_str());
-        //files.push("file:///home/gerrit/Downloads/eye-texture.jpg");
-        files
-    };*/
-    /*let paths = vec![
-        "file:///home/gerrit/Downloads/eye-texture.jpg",
-        "file:///home/gerrit/wallpapers/dark_sun_wallpaper.jpg",
-    ];*/
     let prelim_paths = fs::read_dir("/home/gerrit/Downloads/")
         .unwrap().filter_map(|e| e.ok())
         .map(|e| e.path().to_string_lossy().into_owned())
         .collect::<Vec<_>>();
-    let paths = vec![prelim_paths[0]];
+    //if everything was working, we'd then filter out the unsupported files here
+    //frankly idk what the fuck to do. the lifetimes are being absolutely infuriating
+    let paths = vec![prelim_paths[0].clone()];
 
     let framebox = Box::new(MyApp::new(paths));
     eframe::run_native(
