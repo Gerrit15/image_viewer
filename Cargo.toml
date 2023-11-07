@@ -6,10 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.4.7", features = ["derive"] }
+rand = "0.8.5"
 eframe = {version = "0.23.0", features = ["__screenshot"]}
 egui_extras = {version = "0.23.0", features = ["all_loaders"]}
 env_logger = "0.10"
-image = { version = "0.24", default-features = false, features = [
-  "jpeg",
-  "png",
-] }
+image = { version = "0.24", default-features = false, features = ["jpeg","png"]}
