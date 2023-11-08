@@ -109,7 +109,11 @@ impl<'a> eframe::App for MyApp<'a> {
                 //look into ui.set_visable
                 //might need closure/ui.group stuff
                 if self.images.len() > 0 {
-                    ui.image(self.images[self.index].clone());
+                    ui.group(|ui|{
+                        ui.set_visible(true);
+                        ui.image(self.images[self.index].clone());
+                    });
+                    //ui.image(self.images[self.index].clone());
                 } 
             });
         });
