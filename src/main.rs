@@ -106,6 +106,8 @@ impl<'a> eframe::App for MyApp<'a> {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
                 //yes this is definitely the best way to handle dirs with no images
+                //look into ui.set_visable
+                //might need closure/ui.group stuff
                 if self.images.len() > 0 {
                     ui.image(self.images[self.index].clone());
                 } 
