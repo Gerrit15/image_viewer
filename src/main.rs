@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-use eframe::egui::{self};
+use eframe::egui::{self, SizeHint, TextureOptions};
 use std::{fs, path::PathBuf};
 use clap::Parser;
 use rand::thread_rng;
@@ -67,7 +67,8 @@ struct Args {
 
 struct MyApp<'a> {
     images: Vec<egui::ImageSource<'a>>,
-    index: usize
+    index: usize,
+    preload_magnatude: usize
 }
 
 impl<'a> MyApp<'a> {
@@ -78,7 +79,8 @@ impl<'a> MyApp<'a> {
         }
         MyApp {
             images: image_sets,
-            index: 0
+            index: 0,
+            preload_magnatude: 2
         }
     }
     fn next_image(&mut self) {
@@ -94,7 +96,10 @@ impl<'a> MyApp<'a> {
 impl<'a> eframe::App for MyApp<'a> {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if ctx.input(|i| i.key_pressed(egui::Key::L)) {
+            //if self.images.len() - self.index > self.preload_magnatude as usize {
+            //}
             self.next_image();
+            //let a = self.images.len() - 1 - self.index >= self.preload_magnatude;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::H)) {
             self.previous_image();
@@ -105,15 +110,19 @@ impl<'a> eframe::App for MyApp<'a> {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
-                //yes this is definitely the best way to handle dirs with no images
-                //look into ui.set_visable
-                //might need closure/ui.group stuff
                 if self.images.len() > 0 {
-                    ui.group(|ui|{
-                        ui.set_visible(true);
-                        ui.image(self.images[self.index].clone());
-                    });
-                    //ui.image(self.images[self.index].clone());
+                    ui.image(self.images[self.index].clone());
+                    if self.images.len()-1-self.index >= self.preload_magnatude{
+                        for i in 0..self.preload_magnatude {
+                            let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::default());
+                        }
+                    }
+                    else {
+                        let images_remaining = self.images.len()-1-self.index;
+                        for i in 0..images_remaining {
+                            let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::default());
+                        }
+                    }
                 } 
             });
         });
