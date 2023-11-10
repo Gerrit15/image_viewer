@@ -24,6 +24,21 @@ fn main() {
     };
 }
 
+#[derive(Parser)]
+struct Args {
+    ///Where to view from
+    input: Option<PathBuf>,
+
+    ///do you want your images randomized
+    #[arg(short, long)]
+    random: bool,
+
+    ///do you want your images sorted alphabetically
+    #[arg(short, long)]
+    alphabet: bool
+}
+
+
 fn egui_init(base: String, random: bool, alphabet: bool) -> Result<(), eframe::Error> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
@@ -57,20 +72,6 @@ fn egui_init(base: String, random: bool, alphabet: bool) -> Result<(), eframe::E
             framebox
         }),
     )
-}
-
-#[derive(Parser)]
-struct Args {
-    ///Where to view from
-    input: Option<PathBuf>,
-
-    ///do you want your images randomized
-    #[arg(short, long)]
-    random: bool,
-
-    ///do you want your images sorted alphabetically
-    #[arg(short, long)]
-    alphabet: bool
 }
 
 struct MyApp<'a> {

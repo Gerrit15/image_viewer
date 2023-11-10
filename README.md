@@ -1,12 +1,13 @@
 # current goals
 - nice enough looking ui
 - multiple sorting options
-    - https://stackoverflow.com/questions/55788725/how-do-i-sort-a-vector-of-strings-alphabetically
     - date modified?  might be annoying
-    - enum for all of that stuff.
-- multithreaded buffering
-- wraparound buffering
-- size maximums
+- multithreaded buffering (really only if its needed)
+- wraparound buffering? dunno if it's properly in there
+- size maximums, dynamic?
+- sort into individual files
+- zooming?
+- name updates with name of file
 - clap
 
 # stretch goals
