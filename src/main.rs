@@ -12,19 +12,19 @@ fn main() {
         Some(x) => {
             if x.is_file() {
                 println!("SINGLE IMAGE VIEWING IS NOT CURRENTLY PERMITTED. PLEASE TELL ME TO FIX");
-                _ = egui_init("/home/gerrit/Desktop/loading screens/".to_owned(), args.random);
+                _ = egui_init("/home/gerrit/Desktop/loading screens/".to_owned(), args.random, args.alphabet);
             }
             else {
-                _ = egui_init(x.to_string_lossy().into_owned(), args.random);
+                _ = egui_init(x.to_string_lossy().into_owned(), args.random, args.alphabet);
             }
         },
         None => {
-            _ = egui_init(".".to_owned(), args.random);
+            _ = egui_init(".".to_owned(), args.random, args.alphabet);
         }
     };
 }
 
-fn egui_init(base: String, random: bool) -> Result<(), eframe::Error> {
+fn egui_init(base: String, random: bool, alphabet: bool) -> Result<(), eframe::Error> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
         initial_window_size: None,
@@ -41,7 +41,11 @@ fn egui_init(base: String, random: bool) -> Result<(), eframe::Error> {
             }})
         .collect::<Vec<_>>();
     let mut paths = prelim_paths;
-    if random { paths.shuffle(&mut thread_rng()) }
+    if alphabet {
+        paths.sort_by_key(|name| name.to_lowercase());
+        if random {println!("Random and Alphabetic sorting are incompatable, defaulting to Alphabetic")}
+    }
+    else if random { paths.shuffle(&mut thread_rng()) }
 
     let framebox = Box::new(MyApp::new(paths));
     eframe::run_native(
@@ -62,13 +66,19 @@ struct Args {
 
     ///do you want your images randomized
     #[arg(short, long)]
-    random: bool
+    random: bool,
+
+    ///do you want your images sorted alphabetically
+    #[arg(short, long)]
+    alphabet: bool
 }
 
 struct MyApp<'a> {
     images: Vec<egui::ImageSource<'a>>,
     index: usize,
-    preload_magnatude: usize
+    preload_magnatude: usize,
+    //listen. if it works.
+    first_frame: bool
 }
 
 impl<'a> MyApp<'a> {
@@ -80,29 +90,57 @@ impl<'a> MyApp<'a> {
         MyApp {
             images: image_sets,
             index: 0,
-            preload_magnatude: 2
+            preload_magnatude: 2,
+            first_frame: true
         }
     }
     fn next_image(&mut self) {
-        if self.index < self.images.len() - 1 { self.index += 1}
+        if self.index < (self.images.len() - 1) && self.images.len() > 1 { self.index += 1}
         else { self.index = 0 }
+        println!("{}, {:?}", self.images[self.index].uri().unwrap().to_owned(), self.images[self.index].texture_size());
     }
     fn previous_image(&mut self) {
         if self.index > 0 { self.index -= 1}
         else {self.index = self.images.len() - 1}
+        println!("{}, {:?}", self.images[self.index].uri().unwrap().to_owned(), self.images[self.index].texture_size());
     }
 }
 
 impl<'a> eframe::App for MyApp<'a> {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if ctx.input(|i| i.key_pressed(egui::Key::L)) {
-            //if self.images.len() - self.index > self.preload_magnatude as usize {
-            //}
             self.next_image();
-            //let a = self.images.len() - 1 - self.index >= self.preload_magnatude;
+            if self.images.len()-1-self.index >= self.preload_magnatude{
+                for i in 0..self.preload_magnatude {
+                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                }
+            }
+            else {
+                let images_remaining = self.images.len()-1-self.index;
+                for i in 0..images_remaining {
+                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                }
+                for i in 0..(self.preload_magnatude - images_remaining) {
+                    let _ = self.images[i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                }
+            }
         }
         if ctx.input(|i| i.key_pressed(egui::Key::H)) {
             self.previous_image();
+            if self.index >= self.preload_magnatude {
+                for i in 0..self.preload_magnatude {
+                    let _ = self.images[self.index - i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                }
+            }
+            else {
+                let images_remaining = self.preload_magnatude - self.index;
+                for i in 0..self.index {
+                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                }
+                for i in 0..images_remaining {
+                    let _ = self.images[self.images.len() - 1 - i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                }
+            }
         }
         if ctx.input (|i| i.key_pressed(egui::Key::Q) || i.key_pressed(egui::Key::Escape)) {
             _frame.close()
@@ -112,16 +150,10 @@ impl<'a> eframe::App for MyApp<'a> {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
                 if self.images.len() > 0 {
                     ui.image(self.images[self.index].clone());
-                    if self.images.len()-1-self.index >= self.preload_magnatude{
-                        for i in 0..self.preload_magnatude {
-                            let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::default());
-                        }
-                    }
-                    else {
-                        let images_remaining = self.images.len()-1-self.index;
-                        for i in 0..images_remaining {
-                            let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::default());
-                        }
+                    if self.first_frame && self.images.len() > 1{
+                        let _ = self.images[1].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                        let _ = self.images[self.images.len() - 1].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                        self.first_frame = false;
                     }
                 } 
             });
