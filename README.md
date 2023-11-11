@@ -1,5 +1,7 @@
 # current goals
 - nice enough looking ui
+- click parts for next
+    - previous might be hard
 - multiple sorting options
     - date modified?  might be annoying
 - multithreaded buffering (really only if its needed)
@@ -8,6 +10,7 @@
 - sort into individual files
 - zooming?
 - name updates with name of file
+    - doesn't seem very possible, hover?
 - clap
 
 # stretch goals

@@ -7,21 +7,16 @@ use rand::thread_rng;
 use rand::seq::SliceRandom;
 
 fn main() {
-    let args = Args::parse();
-    match args.input {
-        Some(x) => {
-            if x.is_file() {
-                println!("SINGLE IMAGE VIEWING IS NOT CURRENTLY PERMITTED. PLEASE TELL ME TO FIX");
-                _ = egui_init("/home/gerrit/Desktop/loading screens/".to_owned(), args.random, args.alphabet);
-            }
-            else {
-                _ = egui_init(x.to_string_lossy().into_owned(), args.random, args.alphabet);
+    let args = Args::parse_inputs();
+    match args {
+        Some(a) => {
+            match a.1 {
+                Some(b) => _ = egui_init(a.0.to_string_lossy().into_owned(), !b, b),
+                None => _ = egui_init(a.0.to_string_lossy().into_owned(), false, false)
             }
         },
-        None => {
-            _ = egui_init(".".to_owned(), args.random, args.alphabet);
-        }
-    };
+        None => println!("Cannot currently handle single image viewing")
+    }
 }
 
 #[derive(Parser)]
@@ -36,6 +31,36 @@ struct Args {
     ///do you want your images sorted alphabetically
     #[arg(short, long)]
     alphabet: bool
+}
+
+impl Args {
+    //Some<(...)> if the location is a directory 
+    //Some<bool> for if there is a.) random || alphabetical sorting and b.) if it is alphabetical
+    //(due to defaulting)
+    fn parse_inputs() -> Option<(PathBuf, Option<bool>)> {
+        let inputs = Args::parse();
+        match inputs.input {
+            Some(a) => {
+                if a.is_dir() {
+                    if inputs.random || inputs.alphabet {
+                        if inputs.random && inputs.random {
+                            println!("Cannot sort by both random and alphabetical order, defeaulting to alphabetical");
+                            Some((a, Some(true)))
+                        }
+                        else if inputs.alphabet {
+                            Some((a, Some(true)))
+                        }
+                        else {
+                            Some((a, Some(false)))
+                        }
+                    }
+                    else {return Some((a, None))}
+                }
+                else { None }
+            },
+            None => None
+        }
+    }
 }
 
 
@@ -58,7 +83,6 @@ fn egui_init(base: String, random: bool, alphabet: bool) -> Result<(), eframe::E
     let mut paths = prelim_paths;
     if alphabet {
         paths.sort_by_key(|name| name.to_lowercase());
-        if random {println!("Random and Alphabetic sorting are incompatable, defaulting to Alphabetic")}
     }
     else if random { paths.shuffle(&mut thread_rng()) }
 
@@ -98,12 +122,10 @@ impl<'a> MyApp<'a> {
     fn next_image(&mut self) {
         if self.index < (self.images.len() - 1) && self.images.len() > 1 { self.index += 1}
         else { self.index = 0 }
-        println!("{}, {:?}", self.images[self.index].uri().unwrap().to_owned(), self.images[self.index].texture_size());
     }
     fn previous_image(&mut self) {
         if self.index > 0 { self.index -= 1}
         else {self.index = self.images.len() - 1}
-        println!("{}, {:?}", self.images[self.index].uri().unwrap().to_owned(), self.images[self.index].texture_size());
     }
 }
 
