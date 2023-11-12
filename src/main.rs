@@ -43,7 +43,7 @@ impl Args {
             Some(a) => {
                 if a.is_dir() {
                     if inputs.random || inputs.alphabet {
-                        if inputs.random && inputs.random {
+                        if inputs.alphabet && inputs.random {
                             println!("Cannot sort by both random and alphabetical order, defeaulting to alphabetical");
                             Some((a, Some(true)))
                         }
@@ -131,20 +131,24 @@ impl<'a> MyApp<'a> {
 
 impl<'a> eframe::App for MyApp<'a> {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+
+        //frankly, not sure if this is doing anything. But it's required so eh.
+        let resultion = (1920, 1080);
+
         if ctx.input(|i| i.key_pressed(egui::Key::L)) {
             self.next_image();
             if self.images.len()-1-self.index >= self.preload_magnatude{
                 for i in 0..self.preload_magnatude {
-                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
                 }
             }
             else {
                 let images_remaining = self.images.len()-1-self.index;
                 for i in 0..images_remaining {
-                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
                 }
                 for i in 0..(self.preload_magnatude - images_remaining) {
-                    let _ = self.images[i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                    let _ = self.images[i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
                 }
             }
         }
@@ -152,16 +156,16 @@ impl<'a> eframe::App for MyApp<'a> {
             self.previous_image();
             if self.index >= self.preload_magnatude {
                 for i in 0..self.preload_magnatude {
-                    let _ = self.images[self.index - i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                    let _ = self.images[self.index - i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
                 }
             }
             else {
                 let images_remaining = self.preload_magnatude - self.index;
                 for i in 0..self.index {
-                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                    let _ = self.images[self.index + i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
                 }
                 for i in 0..images_remaining {
-                    let _ = self.images[self.images.len() - 1 - i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
+                    let _ = self.images[self.images.len() - 1 - i].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
                 }
             }
         }
@@ -172,12 +176,17 @@ impl<'a> eframe::App for MyApp<'a> {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
                 if self.images.len() > 0 {
-                    ui.image(self.images[self.index].clone());
-                    if self.first_frame && self.images.len() > 1{
-                        let _ = self.images[1].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
-                        let _ = self.images[self.images.len() - 1].clone().load(ctx, TextureOptions::default(), SizeHint::Size(1920, 1080));
-                        self.first_frame = false;
-                    }
+                    ui.with_layout(egui::Layout::centered_and_justified(egui::Direction::TopDown), |ui| {
+                        ui.image(self.images[self.index].clone());
+
+                        //I feel shame about this line.
+                        //but it does work!
+                        if self.first_frame && self.images.len() > 1 {
+                            let _ = self.images[1].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
+                            let _ = self.images[self.images.len() - 1].clone().load(ctx, TextureOptions::default(), SizeHint::Size(resultion.0, resultion.1));
+                            self.first_frame = false;
+                        }
+                    });
                 } 
             });
         });

@@ -6,6 +6,7 @@ It currently allows for sorting randomly and alphabetically.
 
 # current goals
 - nice enough looking ui
+    - popup bars for name, number in list?
 - click parts for next
     - previous might be hard
 - multiple sorting options
@@ -15,6 +16,7 @@ It currently allows for sorting randomly and alphabetically.
 - size maximums, dynamic?
 - sort into individual files
 - zooming?
+    - probably not?
 - name updates with name of file
     - doesn't seem very possible, hover?
 - clap
